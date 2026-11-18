@@ -88,6 +88,29 @@ class NullSpeaker:
         self.active = False
 
 
+def _check_native_dialog(window, c) -> None:
+    """打开真实的 Windows“导入音频”对话框，由后台线程发 WM_CLOSE 关掉，确认没有改动输入。"""
+    user32 = ctypes.windll.user32
+    seen = {"dialog": False}
+
+    def close_native_dialog():
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            hwnd = user32.FindWindowW("#32770", "导入音频")
+            if hwnd:
+                seen["dialog"] = True
+                time.sleep(0.6)
+                user32.PostMessageW(hwnd, 0x0010, 0, 0)  # WM_CLOSE
+                return
+            time.sleep(0.2)
+
+    threading.Thread(target=close_native_dialog, daemon=True).start()
+    before = window.input
+    window.import_dialog()
+    c.check("原生“导入音频”对话框能打开并取消", seen["dialog"] and window.input is before,
+            "对话框由脚本发送关闭消息，未选择文件")
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m gui.selfcheck")
     parser.add_argument("--out", default=str(ROOT / ".run" / "selfcheck"), help="保存结果和截图的目录")
@@ -106,7 +129,7 @@ def main(argv=None) -> int:
     import soundfile as sf
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
-    from PySide6.QtWidgets import QFileDialog, QPushButton
+    from PySide6.QtWidgets import QApplication, QFileDialog, QPushButton
 
     from . import audio
     from .app import Config, MainWindow
@@ -318,25 +341,11 @@ def main(argv=None) -> int:
         choose(window.out_combo, default_out.name)
 
     # ------------------------------------------------------------------ 原生文件对话框
-    user32 = ctypes.windll.user32
-    seen = {"dialog": False}
-
-    def close_native_dialog():
-        deadline = time.monotonic() + 10
-        while time.monotonic() < deadline:
-            hwnd = user32.FindWindowW("#32770", "导入音频")
-            if hwnd:
-                seen["dialog"] = True
-                time.sleep(0.6)
-                user32.PostMessageW(hwnd, 0x0010, 0, 0)  # WM_CLOSE
-                return
-            time.sleep(0.2)
-
-    threading.Thread(target=close_native_dialog, daemon=True).start()
-    before = window.input
-    window.import_dialog()
-    c.check("原生“导入音频”对话框能打开并取消", seen["dialog"] and window.input is before,
-            "对话框由脚本发送关闭消息，未选择文件")
+    # 离屏模式（QT_QPA_PLATFORM=offscreen）没有原生对话框，exec 会一直等下去，所以跳过这一项。
+    if QApplication.platformName() == "offscreen":
+        c.skip("原生“导入音频”对话框能打开并取消", "离屏模式下没有原生对话框")
+    else:
+        _check_native_dialog(window, c)
 
     # ------------------------------------------------------------------ 导入 → 变声 → 试听 → 保存
     real_open, real_save = QFileDialog.getOpenFileName, QFileDialog.getSaveFileName
