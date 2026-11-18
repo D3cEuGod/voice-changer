@@ -5,7 +5,6 @@ import os
 
 import numpy as np
 import faiss
-import parselmouth
 from scipy.ndimage import maximum_filter1d, uniform_filter1d
 from scipy.signal import butter, resample_poly, sosfilt
 from scipy.signal.windows import hann
@@ -186,6 +185,8 @@ class StreamingDenoiser:
 
 
 def pitch_track(audio):
+    # 只有旧版兼容声线用 Praat；导入的 RVC 声线走 RMVPE。按需导入，便携版不带这个 GPL-3.0 依赖。
+    import parselmouth
     sound = parselmouth.Sound(audio, 16000)
     track = sound.to_pitch_ac(time_step=0.01, pitch_floor=65, pitch_ceiling=650,
                               voicing_threshold=0.48)

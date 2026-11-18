@@ -6,6 +6,7 @@
 
 | 组件 | 版本 | 许可 | 用在哪里 |
 | --- | --- | --- | --- |
+| [Python](https://www.python.org/)（Windows 嵌入式发行版） | 3.13 | PSF-2.0 | 便携版自带的运行环境 |
 | [Qt 6 / PySide6](https://doc.qt.io/qtforpython-6/) | 6.12.0 | LGPL-3.0 | 桌面界面 |
 | [NumPy](https://numpy.org/) | 2.5.4 | BSD-3-Clause | 音频数组 |
 | [SciPy](https://scipy.org/) | 1.18.1 | BSD-3-Clause | 后端信号处理 |
@@ -20,7 +21,9 @@
 | [FAISS](https://github.com/facebookresearch/faiss) | 1.16.0 | MIT | 检索索引 |
 | [Praat / parselmouth](https://github.com/YannickJadoul/Parselmouth) | 0.4.7 | **GPL-3.0** | 音高提取（部分声线） |
 
-程序库都由安装脚本从 PyPI 下载，不包含在本仓库里。**注意：** parselmouth（Praat）是 GPL-3.0。如果你把程序连同依赖打成安装包再分发，整个安装包的分发要遵守 GPL-3.0（提供源代码等）。
+源代码版的程序库由安装脚本从 PyPI 下载，不包含在本仓库里。便携版（Releases 里的 zip）把这些程序库原样放在 `runtime\Lib\site-packages\`，各自的许可文件在对应的 `*.dist-info` 文件夹里；Qt / PySide6 以动态库形式使用，可以自行替换。
+
+**parselmouth（Praat）是 GPL-3.0**，只在旧版兼容声线里用来提取音高，导入的 RVC 声线用 RMVPE，用不到它。所以**便携版不包含 parselmouth**。如果你自己把它连同程序打包再分发，整个安装包的分发要遵守 GPL-3.0。
 
 ## 模型与算法
 

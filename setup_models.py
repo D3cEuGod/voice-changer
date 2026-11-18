@@ -13,6 +13,7 @@ from tools.model_integrity import verified
 ROOT = Path(__file__).resolve().parent
 MODELS = ROOT / "models"
 CACHE = ROOT / ".run"
+RUNTIME = ROOT / "runtime"  # 便携版自带的 Python；源码版没有这个文件夹
 WEIGHTS = CACHE / "rvc-input"
 HF = "https://huggingface.co/"
 SVC = HF + "spaces/ZilliaxOfficial/nyaru-svc-3.0"
@@ -93,14 +94,37 @@ def prepare_export_environment():
     """Prepare only the model-export tools, without downloading compatibility speakers."""
     CACHE.mkdir(parents=True, exist_ok=True)
     env = CACHE / "export-env"
-    python = env / "Scripts/python.exe" if os.name == "nt" else env / "bin/python"
-    if not python.is_file():
-        subprocess.run([sys.executable, "-m", "venv", str(env)], check=True)
     pins = ["torch==2.15.0", "onnx==1.23.2", "scipy==1.18.1", "matplotlib==3.11.2"]
     check = ("from importlib.metadata import version; "
              f"assert all(version(p)==v for p,v in (item.split('==') for item in {pins!r}))")
+    if (RUNTIME / "python.exe").is_file():
+        return _portable_export_environment(env, pins, check)
+    python = env / "Scripts/python.exe" if os.name == "nt" else env / "bin/python"
+    if not python.is_file():
+        subprocess.run([sys.executable, "-m", "venv", str(env)], check=True)
     if subprocess.run([str(python), "-c", check], capture_output=True).returncode:
         subprocess.run([str(python), "-m", "pip", "install", "--no-cache-dir", *pins], check=True)
+    return python
+
+
+def _portable_export_environment(env, pins, check):
+    r"""便携版的 Python 是官方嵌入式发行版，不能建 venv。
+
+    做法：把 runtime\ 顶层的解释器文件复制一份到 .run\export-env\，给它一个只指向自己
+    site-packages 和项目根目录的 ._pth，再用 runtime 里的 pip 把导出工具装进这个目录。
+    """
+    python = env / "python.exe"
+    if not python.is_file():
+        env.mkdir(parents=True, exist_ok=True)
+        for item in RUNTIME.iterdir():
+            if item.is_file() and not item.name.endswith("._pth"):
+                shutil.copy2(item, env / item.name)
+        for pth in RUNTIME.glob("*._pth"):
+            zipped = next(RUNTIME.glob("python3*.zip")).name
+            (env / pth.name).write_text(f"{zipped}\n.\nLib\\site-packages\n..\\..\nimport site\n", encoding="utf-8")
+    if subprocess.run([str(python), "-c", check], capture_output=True).returncode:
+        subprocess.run([str(RUNTIME / "python.exe"), "-m", "pip", "install", "--no-cache-dir", "--upgrade",
+                        "--target", str(env / "Lib" / "site-packages"), *pins], check=True)
     return python
 
 

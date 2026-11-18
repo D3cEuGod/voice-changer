@@ -16,14 +16,22 @@
 - 文件变声：录音或导入 WAV / FLAC / MP3 / OGG，原声和结果对比试听，保存为 WAV
 - 第一次打开有新手引导：选麦克风试音、设置 Discord、记住快捷键
 
-## 需要什么
+## 下载（推荐）
+
+到 [Releases](../../releases/latest) 下载 `VoiceChanger-1.0.0-win64.zip`，解压到路径里没有中文和空格的地方（例如 `D:\VoiceChanger`），双击 `start-gui.cmd`。便携版自带 Python 和所有依赖，**不用另外安装 Python**。第一次启动会下载共用的推理模型（需要联网），之后可以离线使用。
+
+需要：Windows 10 或 11 64 位，支持 DirectX 12 的显卡。想发到语音软件还要装 [VB-CABLE](https://vb-audio.com/Cable/)，见下文。
+
+## 从源代码运行
+
+### 需要什么
 
 - Windows 10 或 11
 - [Python 3.13](https://www.python.org/downloads/)（安装时勾选 “Add python.exe to PATH”，并保留 `py` 启动器）
 - 支持 DirectX 12 的显卡（NVIDIA、AMD、Intel 都可以；作者用 RTX 5060 Ti 测试）
 - 想把变声发到语音软件，还需要一个虚拟麦克风，推荐 [VB-CABLE](https://vb-audio.com/Cable/)（免费，自己去官网下载安装，装完重启电脑）
 
-## 安装和第一次运行
+### 安装和第一次运行
 
 1. 下载本仓库（绿色 “Code” 按钮 → “Download ZIP” 并解压，或者 `git clone`）。路径里最好不要有中文和空格，例如放在 `D:\VoiceChanger`。
 2. 双击 `start-gui.cmd`。第一次会建立运行环境、安装依赖，并下载共用的推理模型（ContentVec、RMVPE、GTCRN、Silero VAD，都会校验 SHA-256），需要联网，几分钟到十几分钟不等。
@@ -40,7 +48,7 @@
 
 第一次导入要额外下载约 2 GB 的导出工具（PyTorch），之后每次一两分钟。只支持 **RVC v2、带音高（f0）** 的模型；`.index` 必须和模型是同一次训练出来的。
 
-命令行也可以导入，参数更多（固定移调、检索比例等）：
+命令行也可以导入，参数更多（固定移调、检索比例等）。便携版把下面的 `.venv\Scripts\python.exe` 换成 `runtime\python.exe`：
 
 ```powershell
 .venv\Scripts\python.exe tools\import_rvc.py --voice mine --name "我的声线" --checkpoint "D:\模型\mine.pth" --index "D:\模型\mine.index" --target-hz 300
@@ -91,4 +99,4 @@
 
 ## 许可
 
-源代码使用 [MIT 许可](LICENSE)。用到的程序库和模型各有自己的许可，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)；其中 parselmouth（Praat）是 GPL-3.0，由安装脚本从 PyPI 下载，不包含在本仓库里。
+源代码使用 [MIT 许可](LICENSE)。用到的程序库和模型各有自己的许可，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)；其中 parselmouth（Praat）是 GPL-3.0，只有从源代码运行时才由安装脚本从 PyPI 下载；本仓库和便携版都不包含它。

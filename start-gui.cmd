@@ -2,6 +2,11 @@
 setlocal
 cd /d "%~dp0"
 set PYTHONUTF8=1
+rem The portable package ships its own Python with every dependency in runtime\.
+if exist "runtime\pythonw.exe" (
+    start "" "runtime\pythonw.exe" -m gui %*
+    exit /b 0
+)
 if not exist ".venv-gui\Scripts\python.exe" (
     echo Creating the GUI environment in .venv-gui ...
     py -3.13 -m venv .venv-gui

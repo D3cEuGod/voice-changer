@@ -361,7 +361,8 @@ class OnboardingDialog(QDialog):
 
 
 
-BACKEND_PYTHON = ROOT / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+BACKEND_PYTHON = (ROOT / "runtime" / "python.exe" if (ROOT / "runtime" / "python.exe").is_file()  # 便携版自带的 Python
+                  else ROOT / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python"))
 IMPORTER = ROOT / "tools" / "import_rvc.py"
 # 目标音域：自动移调会把说话人的音高移到这附近。不确定就选“女声”。
 VOICE_RANGES = {"女声（推荐）": 300.0, "高音少女 / 萝莉": 420.0, "低沉女声 / 少年": 220.0, "男声": 140.0}

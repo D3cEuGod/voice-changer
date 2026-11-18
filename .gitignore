@@ -10,3 +10,4 @@ models/local-rvc/
 *.lnk
 voices/*-frames.npy
 models/knn-vc-PROVENANCE.md
+dist/
