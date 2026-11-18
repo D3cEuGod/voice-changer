@@ -1,0 +1,12 @@
+.venv/
+.venv-gui/
+__pycache__/
+models/*.onnx
+models/*.index
+models/*.part
+models/seed-vc/
+models/local-rvc/
+.run/
+*.lnk
+voices/*-frames.npy
+models/knn-vc-PROVENANCE.md

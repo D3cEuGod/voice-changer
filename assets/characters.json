@@ -1,0 +1,5 @@
+{
+  "_comment": "界面里的声线分类与配色。公开版不带任何角色：导入的声线都归到“我的声线”。想给某条声线配头像或分类：把图片放进 assets/，在 voices 里按 id 写上 color / accent / avatar，再把 id 放进 categories 的某个分类。",
+  "categories": [],
+  "voices": {}
+}
